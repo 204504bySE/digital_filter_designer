@@ -33,21 +33,17 @@ PySide6 + SciPy 製の**デジタルフィルタ設計 GUI**です。FIR(カイ�
    git clone https://github.com/ArqAlice/digital_filter_designer.git
    cd digital_filter_designer
    ```
-2. UVをインストール(下記リンクを参照, インストール済みなら不要)  
-https://docs.astral.sh/uv/getting-started/installation/#standalone-installer
+2. UVをインストール  
+   下記リンクを参照。インストール済みなら不要。  
+   https://docs.astral.sh/uv/getting-started/installation/#standalone-installer
 
-3. パッケージのインストールおよび仮想環境の構築
-    ```bash
-    uv sync
-    ```
-
-4. アプリ起動
+3. アプリ起動
    ```bash
    uv run filter_designer.py
    ```
-5. 左ペインで仕様を設定し、**\[設計する]** を押す
-6. 右ペインに **ゲイン\[dB] / 位相\[deg] / インパルス応答** が表示されます
-7. 下部テキストに **C配列** と設計サマリが出力されます（**\[C配列をコピー]** でクリップボードへ）
+4. 左ペインで仕様を設定し、**\[設計する]** を押す
+5. 右ペインに **ゲイン\[dB] / 位相\[deg] / インパルス応答** が表示されます
+6. 下部テキストに **C配列** と設計サマリが出力されます（**\[C配列をコピー]** でクリップボードへ）
 
 ---
 
