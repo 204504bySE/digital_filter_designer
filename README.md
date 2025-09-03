@@ -35,7 +35,7 @@ PySide6 + SciPy 製の**デジタルフィルタ設計 GUI**です。FIR(カイ�
    ```
 2. UVをインストール  
    下記リンクを参照。インストール済みなら不要。  
-   https://docs.astral.sh/uv/getting-started/installation/#standalone-installer
+   https://docs.astral.sh/uv/getting-started/installation/
 
 3. アプリ起動
    ```bash
