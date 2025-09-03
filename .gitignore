@@ -1,3 +1,11 @@
+# VScode
+.vscode
+
+#Nuitka
+*.build
+*.dist
+*.onefile-build
+
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[codz]

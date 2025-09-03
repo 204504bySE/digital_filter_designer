@@ -1,4 +1,4 @@
-# PySide6 デジタルフィルタ設計ツール (FIR / IIR-SOS)
+# デジタルフィルタ設計ツール
 
 PySide6 + SciPy 製の**デジタルフィルタ設計 GUI**です。FIR(カイザー窓) と IIR(Chebyshev II, SOS) を切り替え、ローパス/ハイパス/バンドパスのいずれかを設計できます。設計結果として **ゲイン/位相線図、インパルス応答、C言語配列の係数** を出力します。
 
@@ -13,7 +13,7 @@ PySide6 + SciPy 製の**デジタルフィルタ設計 GUI**です。FIR(カイ�
 * **単位選択**: Fs, f<sub>p</sub>/f<sub>s</sub> を **Hz / kHz / MHz** から選択可能
 * **Bode 表示**: ゲイン/位相の周波数軸を **log/lin 切替**
 * **位相表示**: ラップ (±180°) / アンラップ切替
-* **インパルス応答**: 表示時間(ms)を任意指定
+* **過渡応答**: インパルス応答及びステップ応答から選択でき、表示時間(ms)を任意指定
 * **カーソル＆ツールチップ**: マウス位置の **f(または t)** と **|H| / ∠H / h** を即時表示。縦線/横線のカーソルラインを描画
 * **C言語配列出力**:
 
@@ -38,19 +38,10 @@ pip install numpy scipy matplotlib PySide6
 ## 使い方
 
 1. リポジトリを取得
-
-   ```bash
-   git clone https://github.com/<your-account>/<your-repo>.git
-   cd <your-repo>
-   ```
 2. 依存をインストール（上記参照）
 3. アプリ起動
-
-   ```bash
-   python filter_designer.py
-   ```
 4. 左ペインで仕様を設定し、**\[設計する]** を押す
-5. 右ペインに **ゲイン\[dB] / 位相\[deg] / インパルス応答** が表示されます
+5. 右ペインに **ゲイン\[dB] / 位相\[deg] / 過渡応答** が表示されます
 6. 下部テキストに **C配列** と設計サマリが出力されます（**\[C配列をコピー]** でクリップボードへ）
 
 ---
@@ -77,7 +68,7 @@ pip install numpy scipy matplotlib PySide6
 * **阻止域減衰 A<sub>s</sub> \[dB]**: FIR の β／タップ数推定、IIR の `cheb2ord`/`cheby2` に利用
 * **通過域リプル A<sub>p</sub> \[dB]**: IIR のみ（`cheb2ord` の gpass）
 * **FIRオプション**: 最大タップ数、**奇数タップ強制**（推奨）
-* **インパルス表示時間**: ms 指定
+* **過渡応答表示時間**: ms 指定
 * **周波数軸**: log/linear 切替
 * **位相表示**: ラップ or アンラップ
 
@@ -158,10 +149,10 @@ static const float biquad_coeffs[5*S] = {
 
 ## 開発
 
-* 単一ファイル: `filter_designer.py`
+* 単一ファイル: `digital_filter_designer.py`
 * 主要依存 API:
 
-  * SciPy: `firwin`, `cheb2ord`, `cheby2`, `freqz`, `sosfreqz`, `sosfilt`
+  * SciPy: `firwin`, `cheb2ord`, `cheby2`, `freqz`, `sosfreqz`, `lfilter`
   * Matplotlib QtAgg: 埋め込みキャンバス
   * PySide6: Qt Widgets
 
@@ -169,32 +160,18 @@ PR / Issue 歓迎です！
 
 ---
 
-## ライセンス
+## exe化(Windowsが対象)
 
-MIT License
+本プロジェクトのexe化にはNuitkaを推奨しております。
+まずNuitkaをインストールします。
 
+```bash
+pip install nuitka
 ```
-MIT License
 
-Copyright (c) 2025 <Your Name>
-
-Permission is hereby granted, free of charge, to any person obtaining a copy
-of this software and associated documentation files (the "Software"), to deal
-in the Software without restriction, including without limitation the rights
-to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-copies of the Software, and to permit persons to whom the Software is
-furnished to do so, subject to the following conditions:
-
-The above copyright notice and this permission notice shall be included in all
-copies or substantial portions of the Software.
-
-THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
-SOFTWARE.
+以下のコマンドでexe化を実行してください
+```bash
+nuitka digital_filter_designer.py --enable-plugin=pyside6 --standalone --windows-console-mode=disable --follow-imports
 ```
 
 ---
