@@ -10,14 +10,12 @@ PySide6 を用いたデジタルフィルタ設計ツール。
 - FIR (カイザー窓) と IIR (Chebyshev II, SOS表現) を切替
 - ローパス / ハイパス / バンドパス を選択
 - サンプリング周波数 [Hz]、通過域端周波数、阻止域端(カットオフ)周波数、減衰量[dB] を入力
-- 出力：ゲイン線図[dB]、位相線図[deg]、インパルス応答（表示時間指定）、フィルタ係数
+- 出力：ゲイン線図[dB]、位相線図[deg]、過渡応答種類選択、過渡応答（表示時間指定）、フィルタ係数
 - 係数は C 言語の配列として出力（FIR taps と SOS 配列、CMSIS-DSP 互換形式も併記）
 
 依存関係（例）:
     pip install numpy scipy matplotlib PySide6
 
-実行:
-    python filter_designer.py
 """
 from __future__ import annotations
 import sys
@@ -192,8 +190,14 @@ class FilterDesigner(QMainWindow):
         self.max_fir_order_sb = QSpinBox(); self.max_fir_order_sb.setRange(11, 16385); self.max_fir_order_sb.setValue(2049); self.max_fir_order_sb.setSingleStep(2)
         self.force_odd_taps_cb = QCheckBox("FIRタップ数を奇数に強制（推奨）"); self.force_odd_taps_cb.setChecked(True)
 
-        # インパルス応答 表示時間
+        # 過渡応答 表示時間
         self.imp_ms_sb = QDoubleSpinBox(); self.imp_ms_sb.setRange(0.00001, 5000.0); self.imp_ms_sb.setDecimals(5); self.imp_ms_sb.setValue(5.0); self.imp_ms_sb.setSuffix(" ms")
+
+        # 過渡応答種類選択
+        self.tresp_cb = QComboBox()
+        self.tresp_cb.addItems(["インパルス応答", "ステップ応答"])
+
+        # 表示オプション
         self.logx_cb = QCheckBox("周波数軸を対数表示 (Bode)"); self.logx_cb.setChecked(True)
         self.unwrap_phase_cb = QCheckBox("位相をアンラップ表示"); self.unwrap_phase_cb.setChecked(True)
 
@@ -229,7 +233,8 @@ class FilterDesigner(QMainWindow):
         form.addRow("阻止域端 (BP)", self.row_fs_bp)
         form.addRow("阻止域減衰量 A_s", self.stop_atten_db_sb)
         form.addRow("通過域リプル A_p (IIR用)", self.pass_ripple_db_sb)
-        form.addRow("インパルス表示時間", self.imp_ms_sb)
+        form.addRow("過渡応答", self.tresp_cb)          # ← 新規
+        form.addRow("過渡表示時間", self.imp_ms_sb)     # ← ラベル変更（インパルス→過渡）
         form.addRow("周波数軸(ゲイン/位相)", self.logx_cb)
         form.addRow("位相表示", self.unwrap_phase_cb)
 
@@ -450,13 +455,24 @@ class FilterDesigner(QMainWindow):
         self.ax_phase.set_ylabel("Phase [deg]")
         self.ax_phase.grid(True, which='both', linestyle=':')
 
-        # インパルス応答
+        # 過渡応答（インパルス / ステップ 切替）
         Tms = float(self.imp_ms_sb.value())
-        Nimp = int(max(2, min(1_000_000, round((Tms/1000.0)*fs))))
-        x = np.zeros(Nimp, dtype=np.float64); x[0] = 1.0
+        Ntr = int(max(2, min(1_000_000, round((Tms/1000.0)*fs))))
+
+        if self.tresp_cb.currentIndex() == 0:  # 「インパルス応答」
+            x = np.zeros(Ntr, dtype=np.float64)
+            x[0] = 1.0
+            title = "Impulse response"
+            yname = "h"
+        else:  # 「ステップ応答」
+            x = np.ones(Ntr, dtype=np.float64)
+            title = "Step response"
+            yname = "y"
+
         y = filt_fn(x)
-        t = np.arange(Nimp) / fs
+        t = np.arange(Ntr) / fs
         self.ax_imp.plot(t, y)
+        self.ax_imp.set_title(title)
         self.ax_imp.set_ylabel("Amplitude")
         self.ax_imp.set_xlabel("Time [s]")
         self.ax_imp.grid(True, linestyle=':')
@@ -584,7 +600,8 @@ class FilterDesigner(QMainWindow):
             elif ax is self.ax_phase:
                 text = f"f = {nice_hz_str(x)}∠H = {y:.1f}°"
             elif ax is self.ax_imp:
-                text = f"t = {nice_sec_str(x)}h = {y:.6g}"
+                yname = "h" if getattr(self, 'tresp_cb', None) and self.tresp_cb.currentIndex() == 0 else "y"
+                text = f"t = {nice_sec_str(x)}\n{yname} = {y:.6g}"
             else:
                 QToolTip.hideText(); return
             QToolTip.showText(QCursor.pos(), text, self.canvas)
